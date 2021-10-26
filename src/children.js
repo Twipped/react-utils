@@ -1,5 +1,5 @@
 import { Children, isValidElement, cloneElement, Fragment } from 'react';
-import { iteratee, isObject, isPrimitive } from 'common/utils';
+import { iteratee, isObject, isPrimitive } from '@twipped/utils';
 
 export function* childIterator (children) {
   for (const child of Children.toArray(children)) {

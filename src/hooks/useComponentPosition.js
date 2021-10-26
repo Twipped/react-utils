@@ -1,6 +1,6 @@
 
 import {  useCallback, useLayoutEffect } from 'react';
-import { shallowEqual } from 'common/utils';
+import { shallowEqual } from '@twipped/utils';
 import useGettableState from 'common/hooks/useGettableState';
 
 export default function useComponentPosition (ref, onUpdate) {

@@ -1,6 +1,6 @@
 /* eslint no-console: 0 */
 
-import { mapReduce } from 'common/utils';
+import { mapReduce } from '@twipped/utils';
 
 const log = mapReduce([ 'info', 'error', 'warn', 'trace' ], (f) =>
   [ f, (...args) => {

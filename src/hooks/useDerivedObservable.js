@@ -2,7 +2,7 @@
 import { computed } from 'mobx';
 import { useRef } from 'react';
 import dft from './default';
-import { shallowEqual, deepEqual } from 'common/utils';
+import { shallowEqual, deepEqual } from '@twipped/utils';
 import areHookInputsEqual from './areHookInputsEqual';
 
 export default function useDerivedObservable (fn, deps, comparison = areHookInputsEqual) {

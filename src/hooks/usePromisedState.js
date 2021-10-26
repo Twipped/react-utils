@@ -1,7 +1,7 @@
 
 import { useCallback, useRef, useEffect } from 'react';
 import useGettableState from './useGettableState';
-import { shallowEqual, warn, MultiMap } from 'common/utils';
+import { shallowEqual, warn, MultiMap } from '@twipped/utils';
 import useComputedRef from './useComputedRef';
 import DEFAULT from './default';
 

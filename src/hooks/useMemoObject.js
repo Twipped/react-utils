@@ -1,5 +1,5 @@
 
-import { isObject, isArray } from 'common/utils';
+import { isObject, isArray } from '@twipped/utils';
 import useStableMemo from './useStableMemo';
 
 /**

@@ -1,5 +1,5 @@
 
-import { isUndefinedOrNull, isArray, isSet, entries } from 'common/utils';
+import { isUndefinedOrNull, isArray, isSet, entries } from '@twipped/utils';
 
 export function stringify (obj) {
   const q = new URLSearchParams();

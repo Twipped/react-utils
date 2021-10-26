@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
-import { isObject, deepEqual } from 'common/utils';
+import { isObject, deepEqual } from '@twipped/utils';
 
 /**
  * Functions identical to useState, except the state is retrievable

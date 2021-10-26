@@ -1,7 +1,7 @@
 
 import { useRef } from 'react';
 import areHookInputsEqual from './areHookInputsEqual';
-import { shallowEqual, deepEqual } from 'common/utils';
+import { shallowEqual, deepEqual } from '@twipped/utils';
 
 /**
  * Identical to `useMemo` _except_ that it provides a semantic guarantee that

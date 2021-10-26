@@ -1,6 +1,6 @@
 
 import { useEffect, useRef } from 'react';
-import { shallowEqual, deepEqual } from 'common/utils';
+import { shallowEqual, deepEqual } from '@twipped/utils';
 import areHookInputsEqual from './areHookInputsEqual';
 import dft from './default';
 

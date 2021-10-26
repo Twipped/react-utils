@@ -29,5 +29,7 @@
     "LICENSE.txt",
     "README.md"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "@twipped/utils": "~4.2.0"
+  }
 }

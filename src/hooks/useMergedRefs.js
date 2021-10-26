@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { noop, isFunction } from 'common/utils';
+import { noop, isFunction } from '@twipped/utils';
 
 export function assignRef (ref, value) {
   if (isFunction(ref)) ref(value);

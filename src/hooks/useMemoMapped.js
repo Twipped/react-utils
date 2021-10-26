@@ -1,6 +1,6 @@
 
 import { useRef } from 'react';
-import { map, iteratee } from 'common/utils';
+import { map, iteratee } from '@twipped/utils';
 
 /**
  * Memoizes the results of mapping a collection (array, object, map, set) per value,

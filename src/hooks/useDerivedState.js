@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import useStableMemo from './useStableMemo';
 import useGettableState from './useGettableState';
 
-import { shallowEqual, deepEqual, isFunction } from 'common/utils';
+import { shallowEqual, deepEqual, isFunction } from '@twipped/utils';
 
 const shallow = (...args) => !shallowEqual(...args);
 const deep = (...args) => !deepEqual(...args);

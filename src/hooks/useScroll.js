@@ -1,6 +1,6 @@
 
 import { useRef } from 'react';
-import { isNotUndefinedOrNull, isString, clamp } from 'common/utils';
+import { isNotUndefinedOrNull, isString, clamp } from '@twipped/utils';
 import { useDeferredLoop } from 'common/hooks/useTimers';
 import useStableMemo from 'common/hooks/useStableMemo';
 import EASING from 'common/easing';

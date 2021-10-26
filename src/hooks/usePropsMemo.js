@@ -1,6 +1,6 @@
 
 
-import { isObject } from 'common/utils';
+import { isObject } from '@twipped/utils';
 import { useRef } from 'react';
 import areHookInputsEqual from './areHookInputsEqual';
 import dft from './default';

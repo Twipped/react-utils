@@ -1,7 +1,7 @@
 
 import PropTypes from 'prop-types';
 import { createContext, useContext } from 'react';
-import { get } from 'common/utils';
+import { get } from '@twipped/utils';
 
 const WithContext = createContext();
 WithContext.displayName = 'With';

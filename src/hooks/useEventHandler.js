@@ -3,7 +3,7 @@ import { useMemo, useCallback, useRef } from 'react';
 import useWillUnmount from './useWillUnmount';
 import useEventCallback from './useEventCallback';
 import useWhenElementRefReady from './useWhenElementRefReady';
-import { assert } from 'common/utils';
+import { assert } from '@twipped/utils';
 
 /**
  * Attaches an event handler outside directly to specified DOM element

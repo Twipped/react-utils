@@ -4,7 +4,7 @@ import { render, createPortal } from 'react-dom';
 import useWillUnmount from 'common/hooks/useWillUnmount';
 import useForceUpdate from 'common/hooks/useForceUpdate';
 import PropTypes from 'prop-types';
-import { noop, map, isFunction } from 'common/utils';
+import { noop, map, isFunction } from '@twipped/utils';
 
 function attachStyles (parent, filename, onReady) {
   const stylesLink = document.createElement('link');
