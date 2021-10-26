@@ -1,6 +1,7 @@
 
 import { useRef } from 'react';
 import areHookInputsEqual from './areHookInputsEqual';
+import { shallowEqual, deepEqual } from 'common/utils';
 
 /**
  * Identical to `useMemo` _except_ that it provides a semantic guarantee that
@@ -11,6 +12,9 @@ import areHookInputsEqual from './areHookInputsEqual';
  * @param deps A dependency array
  */
 export default function useStableMemo (factory, deps, comparison = areHookInputsEqual) {
+  if (comparison === false) comparison = shallowEqual;
+  if (comparison === true) comparison = deepEqual;
+
   let isValid = true;
 
   const valueRef = useRef();

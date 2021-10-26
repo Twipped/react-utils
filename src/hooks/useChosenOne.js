@@ -1,6 +1,5 @@
 
-import { useState } from 'react';
-import useWillMount from './useWillMount';
+import { useState, useEffect } from 'react';
 
 export class Manager {
 
@@ -31,14 +30,14 @@ export class Manager {
   push (ref) {
     const prevLast = this.last;
     this.hooks.push(ref);
-    prevLast && prevLast([ this.hooks.length === 2, false ]);
+    invokeState(prevLast, [ this.hooks.length === 2, false ]);
     return [ !prevLast, true ];
   }
 
   unshift (ref) {
     const prevFirst = this.last;
     this.hooks.push(ref);
-    prevFirst([ false, this.hooks.length === 2 ]);
+    invokeState(prevFirst, [ false, this.hooks.length === 2 ]);
     return [ true, !prevFirst ];
   }
 
@@ -47,15 +46,15 @@ export class Manager {
     const last = this.last;
     if (!last) return;
     // if there's only one ref, then it's the first.
-    last([ this.hooks.length === 1, true ]);
+    invokeState(last, [ this.hooks.length === 1, true ]);
     return ref;
   }
 
   shift () {
-    const ref = this.modals.shift();
+    const ref = this.hooks.shift();
     const first = this.first;
     if (!first) return;
-    first([ true, this.hooks.length === 1 ]);
+    invokeState(first, [ true, this.hooks.length === 1 ]);
     return ref;
   }
 
@@ -87,10 +86,15 @@ export default function useChosenOne (channel) {
 
   const [ [ first, last ], setState ] = useState([ false, false ]);
 
-  useWillMount(
-    () => setState(manager.push(setState)),
-    () => manager.remove(setState),
-  );
+  useEffect(() => {
+    setState(manager.push(setState));
+    return () => manager.remove(setState);
+  }, []);
 
   return { first, last };
+}
+
+function invokeState (fn, state) {
+  if (!fn) return;
+  setTimeout(() => fn(state));
 }

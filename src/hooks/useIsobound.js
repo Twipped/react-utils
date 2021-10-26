@@ -11,23 +11,21 @@ export function useIsoboundContext () {
 }
 
 export function IsoboundContextProvider ({ children }) {
-  // const isoPanels = useMap();
 
-  const [ panelSet, setPanels, getPanels ] = useGettableState([]);
+  const [ panels, setPanels, getPanels ] = useGettableState([]);
 
-  const attach  = useCallback((isoWrap, data) => { setPanels([ ...getPanels(), [ isoWrap, data ] ]); }, [ getPanels, setPanels ]);
-  const detatch = useCallback((isoWrap)       => {
-    setPanels(getPanels().filter(([ wrapper ]) => wrapper !== isoWrap));
+  const attach  = useCallback((Panel, dataFn) => {
+    setPanels([ ...getPanels(), { Panel, dataFn } ]);
   }, [ getPanels, setPanels ]);
 
-  const panels = panelSet.map(([ iso, dataFn ]) =>
-    [ iso, typeof dataFn === 'function' ? dataFn() : dataFn ],
-  );
+  const detatch = useCallback((isoWrap) => {
+    setPanels(getPanels().filter(({ Panel }) => Panel !== isoWrap));
+  }, [ getPanels, setPanels ]);
 
   const context = {
     manager: { attach, detatch },
     panels,
-    length: panelSet.length,
+    length: panels.length,
   };
 
   return <Context.Provider value={context}>{children}</Context.Provider>;
@@ -37,14 +35,20 @@ export function IsoboundContextProvider ({ children }) {
 export default function useIsobound (body, data, displayName) {
   const triggerRef = useRef();
   const bodyRef = useRef(body);
+  const updateNeeded = useRef(false);
+
+  if (bodyRef !== body) {
+    bodyRef.current = body;
+    updateNeeded.current = true;
+  }
 
   useEffect(() => {
-    if (body === bodyRef.current) return;
-    bodyRef.current = body;
+    if (!updateNeeded.current) return;
     triggerRef.current?.();
-  });
+    updateNeeded.current = false;
+  }, [ body ]);
 
-  const Wrapper = useEventCallback(() => {
+  const Wrapper = useCallback(() => {
     const [ , dispatch ] = useReducer((state) => !state, false);
     triggerRef.current = dispatch;
     return bodyRef.current;
@@ -52,6 +56,7 @@ export default function useIsobound (body, data, displayName) {
 
   if (displayName) Wrapper.displayName = displayName;
 
+  // using event callback so that it updates with data changes
   const dataFn = useEventCallback(
     typeof data === 'function'
       ? data
@@ -69,12 +74,16 @@ export default function useIsobound (body, data, displayName) {
 }
 
 
-export function IsoboundOutput ({ children: render }) {
+export function IsoboundOutput ({ children: Render }) {
   const { panels, length } = useIsoboundContext();
   if (!length) return null;
-  return panels.map(([ IsoPanel, props ], i) => (
-    typeof render === 'function'
-      ? render(IsoPanel, props, i)
-      : <IsoPanel key={i} />
+
+  if (typeof Render === 'function') {
+    return <Render panels={panels.map(({ Panel, dataFn }) => [ Panel, dataFn() ])} />;
+  }
+
+  return panels.map(({ Panel }, i) => (
+    <Panel key={i} />
   ));
 }
+

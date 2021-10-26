@@ -16,5 +16,14 @@ export default function useToggledState (initial = false) {
     return onoff;
   });
 
-  return [ state, toggle, getter ];
+  const toggleOff = useCallback(() => { setter(false); });
+  const toggleOn  = useCallback(() => { setter(true); });
+
+  return {
+    state,
+    toggle,
+    on: toggleOn,
+    off: toggleOff,
+    get: getter,
+  };
 }

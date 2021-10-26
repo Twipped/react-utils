@@ -1,50 +1,49 @@
 
-import { useState, useCallback, useLayoutEffect } from 'react';
+import {  useCallback, useLayoutEffect } from 'react';
+import { shallowEqual } from 'common/utils';
+import useGettableState from 'common/hooks/useGettableState';
 
-export default function useComponentPosition (ref) {
-  var _useState = useState(getSize(ref ? ref.current : {}));
-  var ComponentSize = _useState[0];
-  var setComponentSize = _useState[1];
+export default function useComponentPosition (ref, onUpdate) {
+  var [ componentSize, setComponentSize, getComponentSize ] = useGettableState(getSize(ref?.current));
 
-  var handleResize = useCallback(
-    function handleResize () {
-      if (ref.current) {
-        setComponentSize(getSize(ref.current));
+  var handleResize = useCallback(() => {
+    if (ref.current) {
+      const dims = getSize(ref.current);
+      if (!shallowEqual(dims, getComponentSize())) {
+        setComponentSize(dims);
+        onUpdate && onUpdate(dims);
       }
-    },
-    [ ref ],
-  );
+    }
+  }, [ ref ]);
 
-  useLayoutEffect(
-    () => {
-      if (!ref.current) {
-        return;
-      }
+  useLayoutEffect(() => {
+    if (!ref.current) {
+      return;
+    }
 
-      handleResize();
+    const el = ref.current;
+    handleResize();
 
-      if (typeof ResizeObserver === 'function') {
-        var resizeObserver = new ResizeObserver(() => {
-          handleResize();
-        });
-        resizeObserver.observe(ref.current);
-
-        return () => {
-          resizeObserver.disconnect(ref.current);
-          resizeObserver = null;
-        };
-      }
-
-      window.addEventListener('resize', handleResize);
+    if (typeof ResizeObserver === 'function') {
+      var resizeObserver = new ResizeObserver(() => {
+        handleResize();
+      });
+      resizeObserver.observe(el);
 
       return () => {
-        window.removeEventListener('resize', handleResize);
+        resizeObserver.disconnect();
+        resizeObserver = null;
       };
-    },
-    [ ref.current ],
-  );
+    }
 
-  return ComponentSize;
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [ ref.current ]);
+
+  return componentSize;
 }
 
 function getSize (el) {

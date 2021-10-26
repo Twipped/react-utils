@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useRef } from 'react';
-import { isObject } from 'common/utils';
+import { isObject, deepEqual } from 'common/utils';
 
 /**
  * Functions identical to useState, except the state is retrievable
@@ -9,16 +9,17 @@ import { isObject } from 'common/utils';
  * @param  {...[type]} args [description]
  * @return {[type]}         [description]
  */
-export default function useGettableState (initial, { alwaysUpdate } = {}) {
+export default function useGettableState (initial, { alwaysMerge, alwaysUpdate, onlyUpdateOnDiff } = {}) {
   const [ state, setState ] = useState(initial);
   const ref = useRef(state);
   ref.current = state;
 
   const getter = useCallback(() => ref.current, [ ref ]);
-  const setter = useCallback((value, update = alwaysUpdate) => {
-    if (update && isObject(value, true)) {
+  const setter = useCallback((value, merge = alwaysMerge, forceUpdate = alwaysUpdate) => {
+    if (merge && isObject(value, true)) {
       value = { ...ref.current, ...value };
     }
+    if (!forceUpdate && onlyUpdateOnDiff && deepEqual(value, ref.current)) return;
     ref.current = value;
     setState(value);
   }, [ ref, setState ]);

@@ -4,9 +4,10 @@ import { useCallback } from 'react';
 import useStableMemo from './useStableMemo';
 import useGettableState from './useGettableState';
 
-import { shallowEqual, isFunction } from 'common/utils';
+import { shallowEqual, deepEqual, isFunction } from 'common/utils';
 
 const shallow = (...args) => !shallowEqual(...args);
+const deep = (...args) => !deepEqual(...args);
 
 /**
  * Creates a state hook populated by a value derived from dependencies.
@@ -18,6 +19,8 @@ const shallow = (...args) => !shallowEqual(...args);
  * @return {[mixed, Function]} Returns a tuple containing the current state and an updater function.
  */
 export default function useDerivedState (fn, deps = [ fn ], comparator = shallow) {
+  if (comparator === true) comparator = deep;
+
   if (!isFunction(fn)) {
     const v = fn;
     fn = () => v;
@@ -29,10 +32,10 @@ export default function useDerivedState (fn, deps = [ fn ], comparator = shallow
   useImmediateUpdateEffect(() => {
     const diff = comparator(state, initial);
     if (diff) {
-      writeState(initial);
+      setTimeout(() => writeState(initial));
     }
     // console.log({ state, initial, diff });
-  }, [ initial ]);
+  }, [ initial, ...deps ]);
 
   writeState.reset = useCallback(() => writeState(initial), [ writeState, initial ]);
 

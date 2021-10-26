@@ -46,7 +46,7 @@ export default function useClock (...checks) {
         return;
       }
     }
-  }, [ setDate, getDate, ...checks ]), 1000, false);
+  }, [ setDate, getDate, ...checks ]), 1000).start();
 
   return date;
 }

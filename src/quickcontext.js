@@ -2,7 +2,7 @@
 /* eslint react/prop-types:0 */
 import { createContext, useContext, useRef, useCallback } from 'react';
 
-export default function quickContext (name, derivationFn) {
+export default function quickContext (name, derivationFn, { inherit = false } = {}) {
   const Context = createContext();
   Context.displayName = name;
 
@@ -11,7 +11,7 @@ export default function quickContext (name, derivationFn) {
   }
 
   function Provider ({ children, ...props }) {
-    if (useContext(Context)) return children;
+    if (inherit && useContext(Context)) return children;
 
     const context = derivationFn ? derivationFn(props) : props;
 

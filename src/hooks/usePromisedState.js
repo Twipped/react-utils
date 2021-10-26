@@ -15,18 +15,20 @@ import DEFAULT from './default';
  * @param  {Function}     comparator A function to evaluate if the result of the handler differs from current state
  * @return {Object} Returns an object containing the current `state`, `get`, `set`, and `reset` functions, and the current `loading` state.
  */
-export default function usePromisedState (fn, deps = [], { comparator = shallowEqual, initial = DEFAULT } = {}) {
+
+export default function usePromisedState (fn, deps = [], { comparator = shallowEqual, skipFirst, initial = DEFAULT } = {}) {
 
   const [ state, writeState, readState ] = useGettableState(initial);
   const { current: flights } = useComputedRef(() => new Set());
   const { current: cache } = useComputedRef(() => new MultiMap());
+  const isFirst = useRef(true);
   const ticker = useRef(0);
 
   const refresh = useCallback((force) => {
 
     var flight = deps && cache.get(deps);
 
-    if (!flight) {
+    if (!flight || force) {
       // this request hasn't been seen before, so initiate and cache it.
       flight = (async () => fn())();
 
@@ -61,6 +63,10 @@ export default function usePromisedState (fn, deps = [], { comparator = shallowE
   });
 
   useEffect(async () => {
+    if (isFirst.current) {
+      isFirst.current = false;
+      if (skipFirst) return;
+    }
     refresh();
   }, deps);
 

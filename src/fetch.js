@@ -3,7 +3,7 @@
 import { isObject, assert, warning } from 'common/utils';
 import qs from 'qs';
 
-const localFetch = (typeof fetch === 'function' && fetch) || ((typeof window !== 'undefined' && window) || (typeof global !== 'undefined' && global)).fetch;
+const localFetch = ((typeof window !== 'undefined' && window) || (typeof global !== 'undefined' && global)).fetch;
 
 const CONTENT_TYPE = {
   form: 'application/x-www-form-urlencoded',
@@ -16,7 +16,7 @@ const BODY = {
 };
 
 export default async function ajax (url, { data, type = 'form', method = 'GET', ...options } = {}) {
-  assert(fetch, 'Fetch is missing from the current environment.');
+  assert(typeof localFetch === 'function', 'Fetch is missing from the current environment.');
   assert([ 'form', 'json' ].includes(type), `Type "${type}" is not recognized.`);
 
   method = String(method).toUpperCase();

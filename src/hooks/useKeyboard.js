@@ -1,8 +1,7 @@
 
 import { useCallback } from 'react';
 
-// export { default as KEYS } from 'common/keyboardevent-keys';
-import KEYS from 'common/keyboardevent-keys';
+import KEYS from 'common/keyboard';
 
 
 export function useQuickKey (key, fn, props) {

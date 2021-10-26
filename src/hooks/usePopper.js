@@ -12,6 +12,8 @@ import preventOverflow from '@popperjs/core/lib/modifiers/preventOverflow';
 export { placements } from '@popperjs/core/lib/enums';
 import { popperGenerator } from '@popperjs/core/lib/popper-base';
 
+const resolveRef = (ref) => ref && ('current' in ref ? ref.current : ref);
+
 export var createPopper = popperGenerator({
   defaultModifiers: [ hide, popperOffsets, computeStyles, eventListeners, offset, flip, preventOverflow, arrow ],
 });
@@ -27,16 +29,20 @@ var initialPopperStyles = (position) => ({
 
 const disabledApplyStylesModifier = { name: 'applyStyles', enabled: false };
 
-const minWidthModifier = {
+export const minWidthModifier = {
   name: "sameWidth",
   enabled: true,
   phase: "beforeWrite",
   requires: [ 'computeStyles' ],
   fn: ({ state }) => {
-    state.styles.popper.minWidth = state.rects.reference.width + 'px';
+    if (state.options.placement === 'top' || state.options.placement === 'bottom') {
+      state.styles.popper.minWidth = state.rects.reference.width + 'px';
+    }
   },
   effect: ({ state }) => {
-    state.elements.popper.style.minWidth = state.elements.reference.offsetWidth + 'px';
+    if (state.options.placement === 'top' || state.options.placement === 'bottom') {
+      state.elements.popper.style.minWidth = state.elements.reference.offsetWidth + 'px';
+    }
   },
 };
 
@@ -65,6 +71,8 @@ function usePopper (referenceElement, popperElement, {
   ...config
 }) {
   const popperInstanceRef = useRef();
+  referenceElement = resolveRef(referenceElement);
+  popperElement = resolveRef(popperElement);
 
   const update = useCallback(() => {
     popperInstanceRef.current?.update();
@@ -144,7 +152,6 @@ function usePopper (referenceElement, popperElement, {
         setState((s) => ({
           ...s,
           attributes: {},
-          styles: { popper: initialPopperStyles(strategy) },
         }));
       }
     };

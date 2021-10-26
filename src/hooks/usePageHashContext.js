@@ -7,7 +7,6 @@ import useGettableState from './useGettableState';
 export const PageHashContext = createContext(null);
 PageHashContext.displayName = 'PageHashContext';
 
-
 export default function usePageHashContext () {
   return useContext(PageHashContext) || {};
 }
@@ -38,20 +37,25 @@ export const PageHashContextProvider = ({
   if (useContext(PageHashContext)) return children;
   const browser = typeof window !== 'undefined';
 
+  function stringify (input) {
+    return qs.stringify(input, qsOptions).replace(/%2F/g, '/').replace(/%3A/g, ':');
+  }
+
+
   const [ hashState, setHashState, getHashState ] = useGettableState({
     rawHash: browser ? window.location.hash.slice(1) : '',
-    hash: browser ? qs.parse(window.location.hash, qsOptions) : {},
+    hash: browser ? qs.parse(window.location.hash.slice(1), qsOptions) : {},
     prevHash: null,
   });
 
   const push = useCallback((value, replace = false) => {
     const { hash: prevHash } = getHashState();
     const hash = { ...prevHash, ...value };
-    const rawHash = qs.stringify(value);
+    const rawHash = stringify(value);
 
     if (browser) {
       const url = new URL(window.location);
-      url.hash = qs.stringify(value);
+      url.hash = rawHash;
       if (replace) {
         window.history.replaceState({}, '', url);
       } else {
@@ -68,14 +72,14 @@ export const PageHashContextProvider = ({
 
   const compute = useCallback((value) => {
     const hash = { ...getHashState().hash, ...value };
-    return '#' + qs.stringify(hash, qsOptions);
+    return '#' + stringify(hash);
   }, [ getHashState ]);
 
   if (browser) {
     useEventHandler('hashchange', () => {
       setHashState({
         rawHash: window.location.hash.slice(1),
-        hash: qs.parse(window.location.hash, qsOptions),
+        hash: qs.parse(window.location.hash.slice(1), qsOptions),
         prevHash: hashState.hash,
       });
     }).attach(window);

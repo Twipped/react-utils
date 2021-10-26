@@ -1,18 +1,19 @@
 
-import { useMemo, useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import useMounted from './useMounted';
 import useCommittedRef from './useCommittedRef';
 import useWillUnmount from './useWillUnmount';
 import useEventCallback from './useEventCallback';
+import useStableMemo from './useStableMemo';
 
-function useTimeoutGenerator (setter, clearer) {
+function useTimeoutGenerator (setter, clearer, rootFn) {
   const isMounted = useMounted();
 
   const handleRef = useCommittedRef();
 
   useWillUnmount(() => clearer(handleRef.current));
 
-  return useMemo(() => {
+  return useStableMemo(() => {
     function clear () {
       handleRef.current && clearer(handleRef.current);
       handleRef.current = null;
@@ -28,7 +29,7 @@ function useTimeoutGenerator (setter, clearer) {
     }
 
     const isActive = () => !!handleRef.current;
-    set.set = set;
+    set.set = rootFn ? set.bind(null, rootFn) : set;
     set.clear = clear;
     set.isActive = isActive;
 
@@ -53,8 +54,9 @@ function useTimeoutGenerator (setter, clearer) {
  * );
  * ```
  */
-export function useTimeout () {
-  return useTimeoutGenerator(setTimeout, clearTimeout);
+export function useTimeout (fn) {
+  const timer = useTimeoutGenerator(setTimeout, clearTimeout, fn);
+  return timer;
 }
 
 /**
@@ -75,9 +77,10 @@ export function useTimeout () {
  * );
  * ```
  */
-export function useDefer () {
+export function useDefer (fn) {
   if (typeof cancelAnimationFrame === 'undefined') return useTimeout();
-  return useTimeoutGenerator(requestAnimationFrame, cancelAnimationFrame);
+  const timer = useTimeoutGenerator(requestAnimationFrame, cancelAnimationFrame, fn);
+  return timer;
 }
 
 /**
@@ -98,33 +101,19 @@ export function useDefer () {
  * rather than waiting for the first interval to elapse
  *
  */
-export function useInterval (fn, ms = 0, paused = null, runImmediately = false) {
+export function useInterval (fn, ms = 0) {
   const timer = ms > 0 ? useTimeout() : useDefer();
 
-  const fnRef = useCommittedRef(fn);
-
-  // this ref is necessary b/c useEffect will sometimes miss a paused toggle
-  // orphaning a setTimeout chain in the aether, so relying on it's refresh logic is not reliable.
-  const pausedRef = useCommittedRef(paused);
+  fn = useEventCallback(fn);
 
   const tick = useCallback(() => {
-    if (pausedRef.current !== false && pausedRef.current !== null) return;
-    fnRef.current();
+    fn();
     timer.set(tick);
   }, [ timer ]);
 
   const start = useCallback(() => {
     timer.set(tick);
   }, [ timer ]);
-
-  useEffect(() => {
-    if (runImmediately) {
-      tick();
-    } else {
-      timer.set(tick, ms, false);
-    }
-    return () => timer.clear();
-  }, [ paused, runImmediately, tick ]);
 
   return { start, stop: timer.clear, isActive: timer.isActive };
 }
@@ -139,8 +128,8 @@ export function useInterval (fn, ms = 0, paused = null, runImmediately = false) 
  * rather than waiting for the first interval to elapse
  *
  */
-export function useDeferredLoop (fn, paused, runImmediately) {
-  return useInterval(fn, 0, paused, runImmediately);
+export function useDeferredLoop (fn) {
+  return useInterval(fn, 0);
 }
 
 
@@ -162,12 +151,16 @@ export function useDebounce (fn, delay = 100, maxDelay = Infinity) {
   const firstCall = useCommittedRef();
   if (!firstCall.current) firstCall.current = Date.now();
 
+  const lastArgs = useRef();
   const callback = useCallback(() => {
     firstCall.current = null;
-    fn();
+    fn(...lastArgs.current);
+    lastArgs.current = [];
   }, [ fn, firstCall ]);
 
-  return useCallback(() => {
+
+  return useCallback((...args) => {
+    lastArgs.current = args;
     if (Date.now() - firstCall.current > maxDelay) callback();
     else set(callback, delay);
   }, [ callback, delay, maxDelay, firstCall ]);

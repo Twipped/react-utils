@@ -31,5 +31,5 @@ export default function useSmartEffect (fn, deps, comparison = areHookInputsEqua
   });
 
   // when the component unmounts, run the last exitFn
-  useEffect(() => () => exitFn && exitFn(), []);
+  useEffect(() => () => exitFn.current && exitFn.current(), []);
 }

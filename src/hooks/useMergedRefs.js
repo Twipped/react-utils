@@ -1,8 +1,13 @@
 import { useMemo } from 'react';
-import { noop } from 'common/utils';
+import { noop, isFunction } from 'common/utils';
+
+export function assignRef (ref, value) {
+  if (isFunction(ref)) ref(value);
+  if (ref && 'current' in ref) ref.current = value;
+}
 
 function toFnRef (ref) {
-  if (typeof ref === 'function') return ref;
+  if (isFunction(ref)) return ref;
   if (ref && 'current' in ref) return (value) => { ref.current = value; };
   return noop;
 }

@@ -1,6 +1,17 @@
-import { Children, isValidElement, cloneElement } from 'react';
-import PropTypes from 'prop-types';
+import { Children, isValidElement, cloneElement, Fragment } from 'react';
 import { iteratee, isObject, isPrimitive } from 'common/utils';
+
+export function* childIterator (children) {
+  for (const child of Children.toArray(children)) {
+    if (isFragment(child)) {
+      yield* childIterator(child.props.children);
+      continue;
+    }
+    yield child;
+  }
+}
+
+const NATURAL_KEY = /^\.\d+$/
 
 /**
  * Iterates through children that are typically specified as `props.children`,
@@ -16,7 +27,7 @@ export function mapChildren (children, predicate, raw = false) {
 
   let index = 0;
   const result = [];
-  for (const child of children) {
+  for (const child of childIterator(children)) {
     if (!isValidElement(child)) {
       if (raw) result.push(child);
       continue;
@@ -40,7 +51,7 @@ export function forEachChild (children, predicate) {
   children = Children.toArray(children);
 
   let index = 0;
-  for (const child of children) {
+  for (const child of childIterator(children)) {
     if (!isValidElement(child)) continue;
     const res = predicate(child, index++, children);
     if (res === false) break;
@@ -67,11 +78,32 @@ export function cloneChildren (children, func) {
     const props = func;
     func = () => props;
   }
-  return map(children, (child, i) => {
-    const res = func(child.props, child, i);
-    if (isValidElement(res)) return res;
-    return res ? cloneElement(child, res) : null;
-  });
+
+  let i = 0;
+  const results = [];
+
+  for (const child of childIterator(children)) {
+    if (!isValidElement(child)) continue;
+
+    let res = func(child.props, child, i++);
+
+    if (!res) continue;
+    if (res && !isValidElement(res) && !isObject(res)) {
+      throw new TypeError('cloneChildren received a value it does not know how to process: ' + res);
+    }
+
+    if (isValidElement(res)) {
+      const key = NATURAL_KEY.exec(res.key) ? `.${i - 1}` : res.key;
+      res = <res.type ref={res.ref} key={key} {...res.props} />;
+    } else if (isObject(res)) {
+      const key = NATURAL_KEY.exec(child.key) ? `.${i - 1}` : child.key;
+      res = <child.type ref={child.ref} key={key} {...res} />;
+    }
+
+    results.push(res);
+  }
+
+  return results;
 }
 
 export function ensureChild (Child, props = null) {
@@ -105,6 +137,13 @@ export function isComponent (component) {
 
 export function isElement (element) {
   return isValidElement(element);
+}
+
+export function isFragment (variableToInspect) {
+  if (variableToInspect.type) {
+    return variableToInspect.type === Fragment;
+  }
+  return variableToInspect === Fragment;
 }
 
 // deprecated apis
