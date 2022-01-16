@@ -1,9 +1,9 @@
 
 import { useRef } from 'react';
 import { isNotUndefinedOrNull, isString, clamp } from '@twipped/utils';
-import { useDeferredLoop } from 'common/hooks/useTimers';
-import useStableMemo from 'common/hooks/useStableMemo';
-import EASING from 'common/easing';
+import { useDeferredLoop } from './useTimers';
+import useStableMemo from './useStableMemo';
+import EASING from '../easing';
 
 export default function useScroll (ref, baseOptions = {}) {
   if (!(ref && 'current' in ref)) throw new Error('useScroll must be passed a ref object');

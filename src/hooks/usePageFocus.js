@@ -1,8 +1,8 @@
 
 import { useRef, useCallback } from 'react';
-import useEventCallback from 'common/hooks/useEventCallback';
-import useGlobalListener from 'common/hooks/useGlobalListener';
-import useForceUpdate from 'common/hooks/useForceUpdate';
+import useEventCallback from './useEventCallback';
+import useGlobalListener from './useGlobalListener';
+import useForceUpdate from './useForceUpdate';
 
 export default function usePageFocus ({ onChange, update, ownerElementRef }) {
   onChange = useEventCallback(onChange);
