@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import qs from 'qs';
+import qs from '../qs';
 import { createContext, useContext, useCallback, useMemo } from 'react';
 import useEventHandler from './useEventHandler';
 import useGettableState from './useGettableState';

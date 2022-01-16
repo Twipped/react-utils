@@ -1,7 +1,7 @@
 /* global global */
 
 import { isObject, assert, warning } from '@twipped/utils';
-import qs from 'qs';
+import qs from './qs';
 
 const localFetch = ((typeof window !== 'undefined' && window) || (typeof global !== 'undefined' && global)).fetch;
 
