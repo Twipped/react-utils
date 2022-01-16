@@ -1,86 +1,18 @@
-
-import { useRef, useEffect, useCallback, forwardRef, createContext, useContext, cloneElement } from 'react';
-import { render, createPortal } from 'react-dom';
-import useWillUnmount from 'common/hooks/useWillUnmount';
-import useForceUpdate from 'common/hooks/useForceUpdate';
 import PropTypes from 'prop-types';
-import { noop, map, isFunction } from '@twipped/utils';
+import { useRef, useEffect, useReducer, useCallback, forwardRef, cloneElement } from 'react';
+import { map, isFunction } from '@twipped/utils';
+import { createPortal } from 'react-dom';
+import useWillUnmount from './hooks/useWillUnmount';
+import useForceUpdate from './hooks/useForceUpdate';
+import useComputedRef from './hooks/useComputedRef';
 
-function attachStyles (parent, filename, onReady) {
-  const stylesLink = document.createElement('link');
-  stylesLink.setAttribute('rel', 'stylesheet');
-  stylesLink.setAttribute('type', 'text/css');
-  stylesLink.setAttribute('href', filename);
-  stylesLink.onload = onReady;
-  parent.appendChild(stylesLink);
-}
+const orphanage = new Map();
+export const BodyMountManager = new (class {
 
-export const MountContext = createContext(null);
-MountContext.displayName = 'MountContext';
-
-
-export default function mount (app, {
-  target = '.react-bind',
-  css,
-} = {}) {
-
-  const rootElement = document.querySelector(target);
-  if (!rootElement) throw new Error('Could not locate binding element on page');
-
-  const shadow = rootElement.attachShadow({ mode: 'open' });
-
-  const renderNode = document.createElement('div');
-  shadow.appendChild(renderNode);
-
-  const context = {
-    bodyMountManager: new BodyMountManager({ css }),
-    orphans: new Map(),
-    rollcall: noop,
-    cssFile: css,
-    renderNode,
-    shadow,
-  };
-
-  attachStyles(shadow, css, () => {
-    render(<MountContext.Provider value={context}>{app}<Orphanage /></MountContext.Provider>, renderNode);
-  });
-}
-
-export const BodyMount = forwardRef(({ children, source, isStatic }, ref) => {
-
-  const { bodyMountManager } = useContext(MountContext);
-  const mountRef = useRef();
-  if (!mountRef.current) {
-    mountRef.current = bodyMountManager.attach({ ref, source });
-  }
-  const [ mountPoint, dispose ] = mountRef.current;
-
-  useWillUnmount(dispose);
-
-  if (isStatic) return children;
-
-  return createPortal(<>{children}</>, mountPoint);
-});
-BodyMount.displayName = 'BodyMount';
-BodyMount.propTypes = {
-  source: PropTypes.string,
-  isStatic: PropTypes.bool,
-};
-
-class BodyMountManager {
-
-  constructor ({ css }) {
-    const parent = document.createElement('div');
-    const shadow = parent.attachShadow({ mode: 'open' });
-
-    const renderNode = document.createElement('div');
-    shadow.appendChild(renderNode);
-
-    attachStyles(shadow, css);
-
-    this.parentNode = parent;
-    this.shadowNode = shadow;
+  constructor () {
     this.mounts = new Set;
+    this.renderNode = document.createElement('div');
+    document.body.appendChild(this.renderNode);
   }
 
   attach ({ ref, source }) {
@@ -88,7 +20,7 @@ class BodyMountManager {
 
     const mountPoint = document.createElement('div');
     if (source) mountPoint.setAttribute('data-source', source);
-    this.shadowNode.appendChild(mountPoint);
+    this.renderPoint.appendChild(mountPoint);
 
     this.mounts.add(mountPoint);
 
@@ -110,52 +42,68 @@ class BodyMountManager {
     if (!this.mounts.size) document.body.removeChild(this.parentNode);
   }
 
-}
+  attachOrphan (bindKey, binding) {
+    orphanage.set(bindKey, binding);
+    orphanage.update();
+  }
 
-function Orphanage () {
-  const { orphans } = useContext(MountContext);
-  const update = useForceUpdate();
-  orphans.updated = update;
+  detatchOrphan (bindKey) {
+    orphanage.delete(bindKey);
+    orphanage.update();
+  }
 
-  if (!orphans.size) return null;
+});
 
-  return map(orphans, (Component, k, i) => {
+export function Orphanage () {
+  orphanage.update = useForceUpdate();
+
+  if (!orphanage.size) return null;
+
+  return map(orphanage, (Component, k, i) => {
     if (isFunction(Component)) return <Component key={i} />;
     return cloneElement(Component, { key: i });
   });
 }
 
-export function useOrphanage () {
-  const { orphans } = useContext(MountContext);
 
-  return {
-    createOrphan (orphan) {
-      const id = Symbol('Orphan');
-      orphans.set(id, orphan);
-      orphans.updated && orphans.updated();
-      return () => {
-        orphans.delete(id);
-        orphans.updated && orphans.updated();
-      };
-    },
-  };
-}
+export const BodyMount = forwardRef(({ children, source }, ref) => {
+  const mountRef = useComputedRef(() => BodyMountManager.attach({ ref, source }));
+  const [ mountPoint, dispose ] = mountRef.current;
+
+  useWillUnmount(dispose);
+
+  return createPortal(<>{children}</>, mountPoint);
+});
+BodyMount.displayName = 'BodyMount';
+BodyMount.propTypes = {
+  source: PropTypes.string,
+};
+
 
 export function useOrphan (body) {
-  const { orphans } = useContext(MountContext);
+  const triggerRef = useRef();
   const bodyRef = useRef(body);
-  bodyRef.current = body;
+  if (bodyRef.current !== body) {
+    bodyRef.current = body;
+    triggerRef.current?.();
+  }
 
-  const Orphan = useCallback(() => bodyRef.current);
+  const Orphan = useCallback(() => {
+    const [ , update ] = useReducer((state) => (state + 1) % 100, 0);
+    triggerRef.current = update;
+    return bodyRef.current;
+  });
 
-  useEffect(() => {
-    const id = Symbol('Orphan');
-    orphans.set(id, Orphan);
-    orphans.updated && orphans.updated();
-    return () => {
-      orphans.delete(id);
-      orphans.updated && orphans.updated();
-    };
-  }, []);
+  useEffect(() => createOrphan(<Orphan />), []);
 
+}
+
+export function createOrphan (element) {
+  const id = Symbol('Orphan');
+  orphanage.set(id, element);
+  orphanage.updated && orphanage.updated();
+  return () => {
+    orphanage.delete(id);
+    orphanage.updated && orphanage.updated();
+  };
 }
