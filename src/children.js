@@ -11,7 +11,36 @@ export function* childIterator (children) {
   }
 }
 
-const NATURAL_KEY = /^\.\d+$/
+export function* childDescender (children) {
+  for (const child of Children.toArray(children)) {
+    if (child.props && child.props.children) {
+      yield* childDescender(child.props.children);
+      continue;
+    }
+    yield child;
+  }
+}
+
+const NATURAL_KEY = /^\.\d+$/;
+
+/**
+ * Iterates through children that are typically specified as `props.children`,
+ * returning only the children where the predicate results in a truthy return
+ *
+ */
+export function filterChildren (children, predicate) {
+  predicate = iteratee(predicate);
+  children = Children.toArray(children);
+
+  let index = 0;
+  const result = [];
+  for (const child of childIterator(children)) {
+    const res = predicate(child, index++, children);
+    if (res) result.push(child);
+  }
+
+  return result;
+}
 
 /**
  * Iterates through children that are typically specified as `props.children`,
@@ -38,6 +67,7 @@ export function mapChildren (children, predicate, raw = false) {
 
   return result;
 }
+
 
 /**
  * Iterates through children that are "valid elements".
@@ -76,7 +106,7 @@ export function firstChild (children, func) {
 export function cloneChildren (children, func) {
   if (isObject(func, true)) {
     const props = func;
-    func = () => props;
+    func = (p) => ({ ...p, ...props });
   }
 
   let i = 0;
@@ -116,8 +146,7 @@ export function ensureChild (Child, props = null) {
 
 export function isClassComponent (component) {
   return (
-    typeof component === 'function' &&
-    !!component?.prototype?.isReactComponent
+    typeof component === 'function' && component.prototype && component.prototype.isReactComponent
   );
 }
 

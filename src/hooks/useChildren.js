@@ -1,12 +1,28 @@
 
 import { useRef } from 'react';
 import areHookInputsEqual from './areHookInputsEqual';
-import { mapChildren } from 'common/children';
+import { childDescender } from '../children';
+
+function flattenChildren (childs) {
+  return Array.from(childDescender(childs),
+    ({
+      key,
+      ref,
+      type,
+      props: {
+        children, // eslint-disable-line
+        ...props
+      },
+    }) => ({
+      key, ref, type, props,
+    }),
+  ).flat(1);
+}
 
 export default function useChildren (children, factory) {
   let isValid = true;
 
-  const deps = mapChildren(children, (c) => [ c.key, ...Object.values(c.props) ]).flat(1);
+  const deps = flattenChildren(children);
 
   const valueRef = useRef();
 
