@@ -3,7 +3,7 @@
   "version": "2.0.0",
   "description": "A collection of my frequently used react hooks and components",
   "engines": {
-    "node": ">=12.10.0"
+    "node": ">=14"
   },
   "scripts": {
     "lint": "eslint './**/*.{js,jsx}' --fix"
