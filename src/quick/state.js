@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { cloneChildren } from 'common/children';
+import { cloneChildren } from '../children';
 
 /**
  * Create a single useState hook and distributes it as properties to all of the underlying child elements.
