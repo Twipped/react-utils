@@ -1,7 +1,6 @@
 /* eslint react/prop-types: 0 */
 import { useRef, useEffect, useReducer, useCallback, createContext, useContext } from 'react';
 import { EventEmitter } from '@twipped/utils';
-import '@babel/core';
 
 const Context = createContext();
 Context.displayName = 'BoundUpdateContext';
