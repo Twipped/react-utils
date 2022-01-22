@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useRef, useEffect, useReducer, useCallback, createContext, useContext } from 'react';
-import useUpdatedRef from './hooks/useUpdatedRef';
+import useUpdatedRef from '@twipped/hooks/useUpdatedRef';
 import { UpdateBindingProvider, bindForUpdates, useBoundUpdate } from './update-binding';
 
 const IsoboundContext = createContext();

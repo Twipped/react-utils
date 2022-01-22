@@ -2,9 +2,9 @@ import PropTypes from 'prop-types';
 import { useRef, useEffect, useReducer, useCallback, forwardRef, cloneElement } from 'react';
 import { map, isFunction } from '@twipped/utils';
 import { createPortal } from 'react-dom';
-import useWillUnmount from './hooks/useWillUnmount';
-import useForceUpdate from './hooks/useForceUpdate';
-import useComputedRef from './hooks/useComputedRef';
+import useWillUnmount from '@twipped/hooks/useWillUnmount';
+import useForceUpdate from '@twipped/hooks/useForceUpdate';
+import useComputedRef from '@twipped/hooks/useComputedRef';
 
 const orphanage = new Map();
 export const BodyMountManager = new (class {

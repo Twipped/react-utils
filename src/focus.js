@@ -2,13 +2,16 @@
 import PropTypes from 'prop-types';
 import { Children, createContext, useContext, forwardRef, useRef, useEffect, useCallback, cloneElement } from 'react';
 import { isFunction, isUndefinedOrNull } from '@twipped/utils';
-import { useEventHandlerOn } from './hooks/useEventHandler';
-import { useDefer } from './hooks/useTimers';
-import useComputedRef from './hooks/useComputedRef';
-import useGettableState from './hooks/useGettableState';
-import useMemoObject from './hooks/useMemoObject';
-import useSilentState from './hooks/useSilentState';
-import { useToggledGlobalListener } from './hooks/useGlobalListener';
+
+import {
+  useEventHandlerOn,
+  useDefer,
+  useLazyRef,
+  useGettableState,
+  useMemoObject,
+  useSilentState,
+  useToggledGlobalListener,
+} from '@twipped/hooks';
 
 function randomId () {
   const uint32 = window.crypto.getRandomValues(new Uint32Array(1))[0];
@@ -48,7 +51,7 @@ export const FocusProvider = forwardRef(({
 
   const targetRef = focusRef || useRef();
   const defer = useDefer();
-  const { current: targets } = useComputedRef(() => new Map);
+  const { current: targets } = useLazyRef(() => new Map);
   const [ focusTarget, setFocus, getFocus ] = useGettableState(false);
 
 

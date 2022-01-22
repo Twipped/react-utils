@@ -27,7 +27,8 @@
     "README.md"
   ],
   "dependencies": {
-    "@twipped/utils": "~5.0.2"
+    "@twipped/utils": "~5.0.2",
+    "@twipped/hooks": "~0.1.0"
   },
   "peerDependencies": {
     "prop-types": ">=15",
