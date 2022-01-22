@@ -41,23 +41,9 @@
     "mobx-react-lite": "~3.2.3",
     "react-dom": ">=17"
   },
-  "main": "./src/index.js",
+  "main": "./index.js",
   "exports": {
-    ".": "./src/index.js",
-    "./children": "./src/children.js",
-    "./easing": "./src/easing.js",
-    "./fetch": "./src/fetch.js",
-    "./focus": "./src/focus.js",
-    "./hooks/*": "./src/hooks/*.js",
-    "./isobound": "./src/isobound.js",
-    "./focus": "./src/focus.js",
-    "./log": "./src/log.js",
-    "./mount": "./src/mount.js",
-    "./prop-types": "./src/prop-types.js",
-    "./qs": "./src/qs.js",
-    "./quick/*": "./src/quick/*.js",
-    "./ui/*": "./src/ui/*.js",
-    "./update-binding": "./src/update-binding.js",
-    "./with": "./src/with.js"
+    ".": "./index.js",
+    "./*": "./src/*.js",
   }
 }
