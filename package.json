@@ -1,6 +1,6 @@
 {
   "name": "@twipped/react-utils",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A collection of my frequently used react tools and components",
   "engines": {
     "node": ">=14.13"
